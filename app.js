@@ -45,18 +45,27 @@ app.post('/create-account', (req, res) => {
 
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
-    const account = accounts.find(a => a.email === email && a.password === password);
-    if (!account) {
-        res.status(401).json({ message: 'Acceso no autorizado' });
-        return;
-    }
-    const token = jwt.sign({ id: account.id }, SECRET_KEY);
-    res.status(200).json({
-        data: {
-            token: `${token}`,
-            email: account.email,
-            id: account.id
+    const text = 'SELECT * FROM users WHERE email = $1 AND password = $2';
+    const values = [email, password];
+    client.query(text, values, (err, result) => {
+        if (err) {
+            console.log(err.stack);
+            res.status(500).json({ message: 'Algo salió mal' });
+            return;
         }
+        const user = result.rows[0];
+        if (!user) {
+            res.status(401).json({ message: 'Acceso no autorizado' });
+            return;
+        }
+        const token = jwt.sign({ id: user.id }, SECRET_KEY);
+        res.status(200).json({
+            data: {
+                token: `${token}`,
+                email: user.email,
+                id: user.id
+            }
+        });
     });
 });
 
