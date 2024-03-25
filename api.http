@@ -1,0 +1,10 @@
+POST http://localhost:3000/accounts
+
+###
+
+POST http://localhost:1235/about
+Content-Type: application/json
+
+{
+  "name": "John"
+}
