@@ -12,7 +12,6 @@ Content-Type: application/json
   "participants": 100
 }
 
-
 ###
 POST http://localhost:3000/create-account
 Content-Type: application/json
