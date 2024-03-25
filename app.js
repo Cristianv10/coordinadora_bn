@@ -1,12 +1,24 @@
 const http = require('http');
 const { validateEvent , validateAccount} = require('./validate');
 const jwt = require('jsonwebtoken');
+const { Client } = require('pg');
 
 let accounts = [];
 let events = [];
 let id;
 let eventIndex;
 const SECRET_KEY = 'your-secret-key';
+
+const client = new Client({
+    user: 'cvargas',
+    host: 'localhost',
+    database: 'Project',
+    password: '2436',
+    port: 5432,
+  });
+  
+  client.connect();
+
 const processRequest = (req, res) => {
   const { url, method, headers } = req;
   if (url !== '/login' && url !== '/create-account' && (!headers || !headers.authorization)) {
@@ -18,7 +30,8 @@ const processRequest = (req, res) => {
   if (url !== '/login' && url !== '/create-account') {
     token = headers.authorization.split(' ')[1];
     try {
-      jwt.verify(token, SECRET_KEY);
+        const decoded = jwt.verify(token, SECRET_KEY);
+        userId = decoded.id;
     } catch (e) {
       res.statusCode = 401;
       res.end('Acceso no autorizado');
@@ -43,15 +56,18 @@ const processRequest = (req, res) => {
               res.end(JSON.stringify({ status: res.statusCode, message: error.details[0].message }, null, 2));
               return;
             }
-            const account = {
-              id: accounts.length + 1,
-              email: accountData.email,
-              name: accountData.name,
-              password: accountData.password
-            };
-            accounts.push(account);
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.end(JSON.stringify(account));
+            const text = 'INSERT INTO users(email, password, name) VALUES($1, $2, $3) RETURNING *';
+            const values = [accountData.email, accountData.password, accountData.name];
+            client.query(text, values, (err, result) => {
+              if (err) {
+                console.log(err.stack);
+              } else {
+                const user = result.rows[0];
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json; charset=utf-8');
+                res.end(JSON.stringify({ status: res.statusCode, data: { id: user.id, email: user.email, password: user.password } }, null, 2));
+              }
+            });
           });
           break;
         }
