@@ -1,13 +1,30 @@
 const http = require('http');
-const { validateEvent , validateAccounts} = require('./validate');
+const { validateEvent , validateAccount} = require('./validate');
+const jwt = require('jsonwebtoken');
 
 let accounts = [];
 let events = [];
 let id;
 let eventIndex;
-
+const SECRET_KEY = 'your-secret-key';
 const processRequest = (req, res) => {
-  const { url, method } = req;
+  const { url, method, headers } = req;
+  if (url !== '/login' && url !== '/create-account' && (!headers || !headers.authorization)) {
+    res.statusCode = 401;
+    res.end('Acceso no autorizado');
+    return;
+  }
+  let token;
+  if (url !== '/login' && url !== '/create-account') {
+    token = headers.authorization.split(' ')[1];
+    try {
+      jwt.verify(token, SECRET_KEY);
+    } catch (e) {
+      res.statusCode = 401;
+      res.end('Acceso no autorizado');
+      return;
+    }
+  }
 
   switch(method){
     case 'POST':
@@ -19,7 +36,7 @@ const processRequest = (req, res) => {
           });
           req.on('end', () => {
             const accountData = JSON.parse(body);
-            const { error } = validateAccounts(accountData);
+            const { error } = validateAccount(accountData);
             if (error) {
               res.statusCode = 400;
               res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -38,6 +55,32 @@ const processRequest = (req, res) => {
           });
           break;
         }
+        case '/login': {
+            let body = '';
+            req.on('data', chunk => {
+              body += chunk.toString();
+            });
+            req.on('end', () => {
+              const { email, password } = JSON.parse(body);
+              const account = accounts.find(a => a.email === email && a.password === password);
+              if (!account) {
+                res.statusCode = 401;
+                res.end('Acceso no autorizado');
+                return;
+              }
+              const token = jwt.sign({ id: account.id }, SECRET_KEY);
+              res.statusCode = 200;
+              res.end(JSON.stringify({
+                status: res.statusCode,
+                data: {
+                  token: `${token}`,
+                  email: account.email,
+                  id: account.id
+                }
+              }, null, 2));
+            });
+            break;
+          }
         case '/create-event': {
           let body = '';
           req.on('data', chunk => {

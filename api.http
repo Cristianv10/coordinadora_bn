@@ -2,9 +2,13 @@ POST http://localhost:3000/accounts
 
 ###
 
-POST http://localhost:1235/about
+POST http://localhost:3000/create-event
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzExMzgwNzk4fQ.nshUgSBJhChIRAekCjOb4r644qNKw8tIXtHV7VdPknI
 Content-Type: application/json
 
 {
-  "name": "John"
+  "name": "Nombre del evento",
+  "date": "2022-12-31T23:59:59Z",
+  "city": "Nombre de la ciudad",
+  "participants": 100
 }
