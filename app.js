@@ -2,6 +2,11 @@ const http = require('http');
 const { validateEvent , validateAccount} = require('./validate');
 const jwt = require('jsonwebtoken');
 const { Client } = require('pg');
+const cors = require('cors');
+const express = require('express');
+const app = express();
+
+app.use(cors());
 
 let accounts = [];
 let events = [];
