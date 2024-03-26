@@ -76,47 +76,68 @@ app.post('/create-event', (req, res) => {
         res.status(400).json({ message: error.details[0].message });
         return;
     }
-    const event = {
-        id: events.length + 1,
-        name: eventData.name,
-        date: eventData.date,
-        city: eventData.city,
-        participants: eventData.participants
-    };
-    events.push(event);
-    res.json(event);
+    const text = 'INSERT INTO events(name, date, city, participants, details, user_id) VALUES($1, $2, $3, $4, $5, $6) RETURNING *';
+    const values = [eventData.name, eventData.date, eventData.city, eventData.participants, eventData.details, eventData.user_id];
+    client.query(text, values, (err, result) => {
+        if (err) {
+            console.log(err.stack);
+            res.status(500).json({ message: 'Algo salió mal' });
+            return;
+        }
+        const event = result.rows[0];
+        res.status(200).json(event);
+    });
 });
 
-app.put('/:id', (req, res) => {
-    id = req.params.id;
-    eventIndex = events.findIndex(e => e.id === Number(id));
-    if (eventIndex === -1) {
-        res.status(404).json({ message: 'Evento no encontrado' });
-        return;
-    }
-    const eventData = req.body;
-    const { error } = validateEvent(eventData);
-    if (error) {
-        res.status(400).json({ message: error.details[0].message });
-        return;
-    }
-    const updatedEvent = {
-        ...events[eventIndex],
-        ...eventData
-    };
-    events[eventIndex] = updatedEvent;
-    res.json(updatedEvent);
+app.put('/update-event', (req, res) => {
+    const { id, participants } = req.body;
+    const text = 'UPDATE events SET participants = participants + $1 WHERE id = $2 RETURNING *';
+    const values = [participants, id];
+    client.query(text, values, (err, result) => {
+        if (err) {
+            console.log(err.stack);
+            res.status(500).json({ message: 'Algo salió mal' });
+            return;
+        }
+        const event = result.rows[0];
+        if (!event) {
+            res.status(404).json({ message: 'Evento no encontrado' });
+            return;
+        }
+        res.status(200).json(event);
+    });
 });
 
-app.delete('/:id', (req, res) => {
-    id = req.params.id;
-    eventIndex = events.findIndex(e => e.id === Number(id));
-    if (eventIndex === -1) {
-        res.status(404).json({ message: 'Evento no encontrado' });
-        return;
-    }
-    events.splice(eventIndex, 1);
-    res.json({ message: 'Evento eliminado con éxito' });
+app.delete('/delete-event', (req, res) => {
+    const { id } = req.body;
+    const text = 'DELETE FROM events WHERE id = $1 RETURNING *';
+    const values = [id];
+    client.query(text, values, (err, result) => {
+        if (err) {
+            console.log(err.stack);
+            res.status(500).json({ message: 'Algo salió mal' });
+            return;
+        }
+        const event = result.rows[0];
+        if (!event) {
+            res.status(404).json({ message: 'Evento no encontrado' });
+            return;
+        }
+        res.status(200).json({ message: 'Evento eliminado con éxito' });
+    });
+});
+
+app.get('/get-all-events', (req, res) => {
+    const text = 'SELECT * FROM events';
+    client.query(text, (err, result) => {
+        if (err) {
+            console.log(err.stack);
+            res.status(500).json({ message: 'Algo salió mal' });
+            return;
+        }
+        const events = result.rows;
+        res.status(200).json(events);
+    });
 });
 
 app.listen(3000, () => console.log('Server running on port 3000'));

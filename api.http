@@ -30,3 +30,22 @@ Content-Type: application/json
   "email": "cristianjosevp@gmail.com",
   "password": "123456"
 }
+
+###
+GET http://localhost:3000/get-all-events
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzExNDEwMzkzfQ.YNoNgtR9behPXcrrUJ9-XPMOmC0JfXKugL8LtgMXG08
+
+###
+POST http://localhost:3000/create-event
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzExNDA5ODM1fQ.mw0hwGWs_ZG5MdQDAAsB8c5aUpOxYWl7XbczyoggOI4
+Content-Type: application/json
+ 
+{
+  "name": "Nombre del evento",
+  "date": "2022-12-31T23:59:59Z",
+  "city": "Nombre de la ciudad",
+  "participants": 100,
+  "details": "Detalles del evento",
+  "user_id": 6
+}
+
