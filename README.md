@@ -82,6 +82,16 @@ Aquí tienes las instrucciones para consumir la API, incluyendo los endpoints di
         Authorization: Bearer <your-token>
 
 ## Scripts DDL
+    1. Abra su terminal 
+   
+    2. Conecte postgress con el siguiente comando: psql -U your_username 
+     Luego remplácelo en el que aparece en el appjs.
+
+    3. Cree su base de datos, puede colocarle igual, es decir: CREATE DATABASE Project;
+   
+    4. Conectese a la DB. 
+   
+    5. usar los siguientes scripts para las tablas:
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
