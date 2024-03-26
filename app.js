@@ -7,11 +7,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
-let accounts = [];
-let events = [];
-let id;
-let eventIndex;
 const SECRET_KEY = 'your-secret-key';
 
 const client = new Client({
